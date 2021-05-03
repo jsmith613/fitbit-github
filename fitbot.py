@@ -75,7 +75,7 @@ def get_current_date():
 def get_full_name(access_token):
 	header = {'Authorization': 'Bearer {}'.format(access_token)}
 	response = requests.get("https://api.fitbit.com/1/user/-/profile.json", headers=header).json()
-	return response['user']['fullName']
+	return response['user']['displayName']
 
 main()
 
