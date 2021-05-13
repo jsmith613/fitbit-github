@@ -10,9 +10,13 @@ def main():
 
 	josiah_access_token = config('ACCESS_TOKEN')
 	kartik_access_token = config('KARTIK_ACCESS_TOKEN')
+	# ejnar_access_token = config('EJNAR_ACCESS_TOKEN')
+	sup_access_token = config('SUP_ACCESS_TOKEN')
+	rishi_access_token = config('RISHI_ACCESS_TOKEN')
+
 	final_str = ""
 	final_str += get_leaderboard(josiah_access_token)
-	final_str += get_daily_steps_leaderboard([josiah_access_token, kartik_access_token])
+	final_str += get_daily_steps_leaderboard([josiah_access_token, kartik_access_token, sup_access_token, rishi_access_token])
 
 	print(final_str)
 
