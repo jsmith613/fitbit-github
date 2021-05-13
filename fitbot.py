@@ -3,6 +3,8 @@ import datetime
 import os
 import pytz
 from decouple import config
+import discord
+from discord import Webhook, RequestsWebhookAdapter
 
 def main():
 
@@ -14,15 +16,22 @@ def main():
 	sup_access_token = config('SUP_ACCESS_TOKEN')
 	rishi_access_token = config('RISHI_ACCESS_TOKEN')
 
-	final_str = ""
-	final_str += get_leaderboard(josiah_access_token)
-	final_str += get_daily_steps_leaderboard([josiah_access_token, kartik_access_token, sup_access_token, rishi_access_token])
-
-	print(final_str)
+	date = get_current_date()
 
 
-	data = {"content": final_str}
-	response = requests.post(discord_url, json=data)
+	webhook = Webhook.from_url(discord_url, adapter=RequestsWebhookAdapter())
+	e = discord.Embed(
+		title="Daily Fitbot " + date.strftime("%x"), 
+		color=65520, 
+		description="",
+		thumbnail='https://logos-world.net/wp-content/uploads/2021/02/Fitbit-Emblem.png',
+		url='https://www.fitbit.com/')
+	e.add_field(name="__Fitbit Leaderboard__", value=get_leaderboard(josiah_access_token), inline=True)
+	e.add_field(name="__Daily Step Counts__", value=get_daily_steps_leaderboard([josiah_access_token, kartik_access_token, sup_access_token, rishi_access_token]), inline=True)
+	e.set_thumbnail(url='https://logos-world.net/wp-content/uploads/2021/02/Fitbit-Emblem.png')
+
+
+	webhook.send(embed=e)
 
 
 
@@ -39,7 +48,7 @@ def get_leaderboard(access_token):
 	date = get_current_date()
 
 
-	final_str = "---------------------------------\n" + 'Fitbit Leaderboard ' + date.strftime("%x") + "\n---------------------------------\n"
+	final_str = '\n'
 	for data in response['data']:
 		user_id = data['relationships']['user']['data']['id']
 		rank = data['attributes']['step-rank'] 
@@ -58,7 +67,7 @@ def get_daily_steps_leaderboard(access_tokens):
 		response = requests.get("https://api.fitbit.com/1/user/-/activities/date/" + formatted_date + ".json", headers=header).json()
 		steps_hash[get_daily_steps(response)] = get_full_name(access_token)
 
-	final_str = "---------------------------------\n" + 'Daily Step Counts ' + "\n---------------------------------\n"
+	final_str = '\n'
 	i = 1
 	for daily_step_count in sorted(steps_hash.keys(), reverse=True):
 		append_str = str(i) + ". " + steps_hash[daily_step_count] + " - " + str(daily_step_count)
