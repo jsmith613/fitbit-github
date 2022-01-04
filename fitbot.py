@@ -31,17 +31,12 @@ def main():
 		thumbnail='https://logos-world.net/wp-content/uploads/2021/02/Fitbit-Emblem.png',
 		url='https://www.fitbit.com/')
 
-	weekly_names_value, weekly_steps_value = get_leaderboard(josiah_access_token)
+	weekly_names_value = get_leaderboard(josiah_access_token)
 	e.add_field(name="__Weekly Steps__", value=weekly_names_value, inline=True)
-	e.add_field(name='\u200b', value='\u200b', inline=True) # strictly for formatting
-	e.add_field(name='⠀', value=weekly_steps_value, inline=True)
 
 	
-
-	daily_names_value, daily_steps_value = get_daily_steps_leaderboard(access_tokens, formatted_date)
+	daily_names_value = get_daily_steps_leaderboard(access_tokens, formatted_date)
 	e.add_field(name="__Yesterday's Steps__", value=daily_names_value, inline=True)
-	e.add_field(name='\u200b', value='\u200b', inline=True) # strictly for formatting
-	e.add_field(name='⠀', value=daily_steps_value, inline=True)
 
 
 	e.set_thumbnail(url='https://logos-world.net/wp-content/uploads/2021/02/Fitbit-Emblem.png')
@@ -57,22 +52,22 @@ def get_leaderboard(access_token):
 	id_hash = {}
 
 	for person in response['included']:
-	    id_hash[person['id']] = person['attributes']['name']
+		id_hash[person['id']] = person['attributes']['name']
 
 
 	names_str = '\n'
-	steps_str = '\n'
 	for data in response['data']:
+		if not 'attributes' in data:
+			continue
 		user_id = data['relationships']['user']['data']['id']
 		rank = data['attributes']['step-rank'] 
 		step_count = data['attributes']['step-summary'] 
 
-		names_str += str(rank) + ". " + id_hash[user_id].replace('.', '') + ":"
+		names_str += str(rank) + ". " + id_hash[user_id].replace('.', '') + ":    "
+		names_str += f'{int(step_count):,}'
 		names_str += '\n'
-		steps_str += f'{int(step_count):,}'
-		steps_str += '\n'
 
-	return names_str, steps_str
+	return names_str
 
 # date must be in YYYY-MM-DD format
 def get_daily_steps_leaderboard(access_tokens, date):
@@ -89,12 +84,11 @@ def get_daily_steps_leaderboard(access_tokens, date):
 
 	# sort hash by key (step number) 
 	for daily_step_count in sorted(steps_hash.keys(), reverse=True):
-		names_str += str(i) + ". " + steps_hash[daily_step_count].replace('.', '') + ":"
+		names_str += str(i) + ". " + steps_hash[daily_step_count].replace('.', '') + ":    "
+		names_str += f'{daily_step_count:,}'
 		names_str += '\n'
-		steps_str += f'{daily_step_count:,}'
-		steps_str += '\n'
 		i+=1
-	return names_str, steps_str
+	return names_str
 
 
 def get_daily_steps(response):
@@ -111,10 +105,3 @@ def get_full_name(access_token):
 	return response['user']['displayName']
 
 main()
-
-
-
-
-
-
-	
